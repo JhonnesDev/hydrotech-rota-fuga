@@ -81,138 +81,152 @@
   .led.perigo { background: var(--vermelho); box-shadow: 0 0 12px var(--vermelho); animation: piscar 1s infinite; }
   @keyframes piscar { 50% { opacity: .35; } }
 
-  /* Painel */
+  /* Painel: altura acompanha o conteúdo; a ação principal fica presa embaixo */
   .painel {
-    position: fixed; z-index: 4; top: 88px; left: 16px; bottom: 16px; width: 400px;
+    position: fixed; z-index: 4; top: 88px; left: 16px; width: 400px; max-height: calc(100vh - 104px);
     display: flex; flex-direction: column;
-    background: linear-gradient(165deg, rgba(18, 30, 54, .82), rgba(7, 12, 24, .9) 70%);
+    background: linear-gradient(165deg, rgba(18, 30, 54, .84), rgba(7, 12, 24, .92) 70%);
     border: 1px solid var(--borda); border-radius: 26px;
     backdrop-filter: blur(22px) saturate(150%);
     box-shadow: var(--sombra-funda), inset 0 1px 0 var(--brilho-topo), inset 0 -1px 0 rgba(0, 0, 0, .5);
     overflow: hidden;
   }
-  .painel::before { /* reflexo de vidro */
+  .painel::before { /* reflexo do vidro */
     content: ''; position: absolute; inset: 0 0 auto 0; height: 120px; pointer-events: none;
     background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent);
   }
-  .painel-rolagem { overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin; scrollbar-color: rgba(148, 197, 255, .2) transparent; }
-  .rotulo { font-size: 10.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--texto-3); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-  .rotulo::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--borda-forte), transparent); }
+  .painel-rolagem { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 14px;
+    scrollbar-width: thin; scrollbar-color: rgba(148, 197, 255, .2) transparent; }
+  #corpo { display: flex; flex-direction: column; gap: 14px; transition: opacity .2s; }
+  #corpo:empty { display: none; }
+  #corpo.esmaecido { opacity: .4; pointer-events: none; }
+  .painel-rodape { flex-shrink: 0; padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 10px;
+    border-top: 1px solid var(--borda); background: linear-gradient(180deg, rgba(4, 9, 18, .35), rgba(4, 9, 18, .8)); }
 
-  .intro h1 { font-size: 26px; font-weight: 900; letter-spacing: -.03em; line-height: 1.1;
+  .intro h1 { font-size: 22px; font-weight: 900; letter-spacing: -.03em; line-height: 1.1;
     background: linear-gradient(180deg, #fff, #9db3d1); -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .intro p { margin-top: 6px; font-size: 13.5px; color: var(--texto-2); line-height: 1.55; }
+  .intro p { margin-top: 6px; font-size: 13px; color: var(--texto-2); line-height: 1.5; }
 
-  /* Faixa de alerta */
-  .alerta {
-    position: relative; overflow: hidden; border-radius: 18px; padding: 16px 16px 14px;
-    background: linear-gradient(160deg, rgba(127, 29, 29, .55), rgba(69, 10, 10, .65));
-    border: 1px solid rgba(248, 113, 113, .45);
-    box-shadow: 0 0 0 1px rgba(239, 68, 68, .15), 0 18px 40px -12px rgba(239, 68, 68, .45), inset 0 1px 0 rgba(255, 255, 255, .12);
-    animation: alerta-respira 2s ease-in-out infinite;
-  }
-  .alerta::before { /* listras de perigo */
+  /* Faixa de status: uma só no topo; vermelha forte só quando a pessoa está dentro da zona */
+  .status { position: relative; overflow: hidden; display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 18px; }
+  .status b { display: block; font-size: 15px; font-weight: 800; line-height: 1.25; }
+  .status span { display: block; margin-top: 3px; font-size: 13px; line-height: 1.45; }
+  .status small { display: block; margin-top: 8px; font-size: 11.5px; line-height: 1.4; opacity: .75; }
+  .status.perigo { color: #fee2e2;
+    background: linear-gradient(160deg, rgba(185, 28, 28, .6), rgba(69, 10, 10, .75)); border: 1px solid rgba(248, 113, 113, .55);
+    box-shadow: 0 18px 40px -12px rgba(239, 68, 68, .5), inset 0 1px 0 rgba(255, 255, 255, .14); animation: respirar 2s ease-in-out infinite; }
+  .status.perigo::before { /* listras de perigo */
     content: ''; position: absolute; inset: 0; opacity: .08; pointer-events: none;
     background: repeating-linear-gradient(-45deg, #fca5a5 0 10px, transparent 10px 22px);
   }
-  @keyframes alerta-respira { 50% { box-shadow: 0 0 0 1px rgba(239, 68, 68, .35), 0 18px 50px -8px rgba(239, 68, 68, .7), inset 0 1px 0 rgba(255, 255, 255, .12); } }
-  .alerta-topo { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: .12em; font-size: 12px; color: #fecaca; }
-  .sirene { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center;
+  .status.alerta { color: #fecaca; background: rgba(127, 29, 29, .3); border: 1px solid rgba(248, 113, 113, .28); }
+  .status.alerta b { font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: #fca5a5; }
+  .status.alerta span { color: #fff; font-weight: 600; }
+  @keyframes respirar { 50% { box-shadow: 0 18px 50px -8px rgba(239, 68, 68, .75), inset 0 1px 0 rgba(255, 255, 255, .14); } }
+  .sirene { position: relative; width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; display: grid; place-items: center;
     background: radial-gradient(circle at 35% 30%, #fca5a5, #dc2626 55%, #7f1d1d);
     box-shadow: 0 4px 0 #450a0a, 0 0 18px rgba(239, 68, 68, .8); animation: sirene 1s steps(2) infinite; }
   @keyframes sirene { 50% { box-shadow: 0 4px 0 #450a0a, 0 0 4px rgba(239, 68, 68, .3); filter: brightness(.75); } }
-  .alerta-lista { position: relative; margin-top: 10px; font-size: 13.5px; line-height: 1.5; }
-  .alerta-lista b { color: #fff; }
-  .alerta-rodape { position: relative; margin-top: 8px; font-size: 12px; color: #fca5a5; }
 
-  /* Botão principal 3D */
+  /* Botões 3D: vermelho para começar, azul para navegar */
   .btn3d {
-    position: relative; width: 100%; border: 0; cursor: pointer; border-radius: 18px; padding: 17px 18px;
+    position: relative; width: 100%; border: 0; cursor: pointer; border-radius: 18px; padding: 16px 18px; text-decoration: none;
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    font-size: 15.5px; font-weight: 800; letter-spacing: .01em; color: #fff;
+    font-family: inherit; font-size: 15.5px; font-weight: 800; letter-spacing: .01em; color: #fff;
     background: linear-gradient(180deg, #f87171, #dc2626 55%, #b91c1c);
     box-shadow: 0 7px 0 #7f1d1d, 0 14px 28px -6px rgba(220, 38, 38, .65), inset 0 1px 0 rgba(255, 255, 255, .4), inset 0 -2px 0 rgba(0, 0, 0, .15);
-    transform: translateY(0); transition: transform .08s, box-shadow .08s, filter .2s;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+    transition: transform .08s, box-shadow .08s, filter .2s; text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
   }
   .btn3d:hover { filter: brightness(1.08); }
   .btn3d:active { transform: translateY(6px); box-shadow: 0 1px 0 #7f1d1d, 0 6px 14px -6px rgba(220, 38, 38, .6), inset 0 1px 0 rgba(255, 255, 255, .3); }
   .btn3d:disabled { cursor: wait; filter: saturate(.6) brightness(.85); }
+  .btn3d.azul { background: linear-gradient(180deg, #60a5fa, #2563eb 55%, #1d4ed8);
+    box-shadow: 0 7px 0 #1e3a8a, 0 14px 28px -6px rgba(37, 99, 235, .6), inset 0 1px 0 rgba(255, 255, 255, .4), inset 0 -2px 0 rgba(0, 0, 0, .15); }
+  .btn3d.azul:active { box-shadow: 0 1px 0 #1e3a8a, 0 6px 14px -6px rgba(37, 99, 235, .6); }
   .btn3d .alvo { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; position: relative; box-shadow: 0 0 10px rgba(255, 255, 255, .6); }
   .btn3d .alvo::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: #fff; }
+  .acoes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .btn-sec { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 6px; border-radius: 12px; cursor: pointer;
+    font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--texto); text-decoration: none; white-space: nowrap;
+    background: linear-gradient(180deg, rgba(34, 52, 86, .95), rgba(16, 26, 46, .95)); border: 1px solid var(--borda-forte);
+    box-shadow: 0 4px 0 rgba(3, 7, 16, .95), inset 0 1px 0 var(--brilho-topo); transition: transform .08s, box-shadow .08s, color .2s; }
+  .btn-sec:hover { color: #fff; border-color: rgba(96, 165, 250, .45); }
+  .btn-sec:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(3, 7, 16, .95); }
+  .btn-sec:disabled { opacity: .4; cursor: not-allowed; }
+  .ou-toque { text-align: center; font-size: 12px; color: var(--texto-3); }
 
   /* Seletor a pé / carro */
-  .segmentos { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 5px; border-radius: 16px;
+  .segmentos { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 14px;
     background: rgba(2, 6, 14, .6); border: 1px solid var(--borda); box-shadow: inset 0 3px 8px rgba(0, 0, 0, .6); }
-  .segmentos .pilula { position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); border-radius: 12px;
-    background: linear-gradient(180deg, #2b4c80, #1d3560); box-shadow: 0 4px 0 #0f1f3d, 0 8px 16px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .2);
+  .segmentos .pilula { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 10px;
+    background: linear-gradient(180deg, #2b4c80, #1d3560); box-shadow: 0 3px 0 #0f1f3d, 0 8px 16px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .2);
     transition: transform .35s cubic-bezier(.3, 1.4, .5, 1); }
   .segmentos[data-modo="carro"] .pilula { transform: translateX(100%); }
-  .segmentos button { position: relative; z-index: 1; border: 0; background: none; color: var(--texto-2); padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: color .2s; }
+  .segmentos button { position: relative; z-index: 1; border: 0; background: none; color: var(--texto-2); padding: 10px; font-family: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: color .2s; }
   .segmentos button.ativo { color: #fff; }
-  .dica { font-size: 12.5px; color: var(--texto-3); line-height: 1.5; display: flex; gap: 8px; }
-  .dica svg { flex-shrink: 0; margin-top: 2px; }
 
-  /* Avisos */
-  .aviso { display: flex; gap: 10px; padding: 12px 14px; border-radius: 14px; font-size: 13px; line-height: 1.45;
-    background: rgba(245, 158, 11, .1); border: 1px solid rgba(245, 158, 11, .3); color: #fcd34d; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05); }
+  /* Avisos: amarelos. O vermelho fica só na faixa de status */
+  .avisos { display: flex; flex-direction: column; gap: 8px; }
+  .aviso { display: flex; gap: 10px; padding: 11px 13px; border-radius: 14px; font-size: 12.5px; line-height: 1.45;
+    background: rgba(245, 158, 11, .09); border: 1px solid rgba(245, 158, 11, .28); color: #fcd34d; }
   .aviso.grave { background: rgba(239, 68, 68, .14); border-color: rgba(239, 68, 68, .45); color: #fecaca; font-weight: 700; }
   .aviso svg { flex-shrink: 0; margin-top: 1px; }
 
-  /* Cartão de destino */
+  /* Cartão do destino: primeiro bloco quando a rota fica pronta */
   .destino3d { perspective: 900px; }
   .destino-cartao {
-    position: relative; border-radius: 22px; padding: 18px; transform-style: preserve-3d;
+    position: relative; border-radius: 22px; padding: 16px; transform-style: preserve-3d;
     background: linear-gradient(150deg, rgba(16, 185, 129, .22), rgba(6, 78, 59, .35) 45%, rgba(6, 20, 30, .6));
     border: 1px solid rgba(52, 211, 153, .35);
-    box-shadow: 0 24px 48px -16px rgba(16, 185, 129, .45), 0 0 0 1px rgba(16, 185, 129, .08), inset 0 1px 0 rgba(255, 255, 255, .14);
+    box-shadow: 0 24px 48px -16px rgba(16, 185, 129, .45), inset 0 1px 0 rgba(255, 255, 255, .14);
     transition: transform .15s ease-out;
   }
-  .destino-cartao .camada { transform: translateZ(28px); }
-  .destino-topo { display: flex; align-items: center; gap: 12px; }
-  .bandeira { width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0; display: grid; place-items: center;
+  .destino-cartao .camada { transform: translateZ(28px); display: flex; flex-direction: column; gap: 14px; }
+  .destino-rotulo { font-size: 10.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #6ee7b7; }
+  .destino-topo { display: flex; align-items: center; gap: 12px; margin-top: -6px; }
+  .bandeira { width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; display: grid; place-items: center;
     background: linear-gradient(145deg, #34d399, #059669 60%, #065f46);
-    box-shadow: 0 6px 0 #064e3b, 0 12px 22px rgba(16, 185, 129, .5), inset 0 1px 0 rgba(255, 255, 255, .45); }
+    box-shadow: 0 5px 0 #064e3b, 0 12px 22px rgba(16, 185, 129, .5), inset 0 1px 0 rgba(255, 255, 255, .45); }
   .destino-nome { font-size: 19px; font-weight: 900; letter-spacing: -.02em; }
   .destino-tipo { font-size: 12.5px; color: #a7f3d0; margin-top: 2px; line-height: 1.4; }
-  .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
-  .metrica { border-radius: 14px; padding: 10px 10px 9px; background: rgba(2, 6, 14, .45); border: 1px solid rgba(255, 255, 255, .06);
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, .45), 0 1px 0 rgba(255, 255, 255, .05); }
-  .metrica b { display: block; font-family: var(--mono); font-size: 20px; font-weight: 700; letter-spacing: -.02em; color: #fff; text-shadow: 0 0 18px rgba(52, 211, 153, .45); }
-  .metrica span { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--texto-3); }
+  .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .metrica { border-radius: 14px; padding: 10px 8px; background: rgba(2, 6, 14, .45); border: 1px solid rgba(255, 255, 255, .06);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, .45); }
+  .metrica b { display: block; font-family: var(--mono); font-size: 19px; font-weight: 700; letter-spacing: -.02em; color: #fff; text-shadow: 0 0 18px rgba(52, 211, 153, .45); white-space: nowrap; }
+  .metrica span { font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--texto-3); white-space: nowrap; }
   .metrica.subida b { color: var(--verde-claro); }
 
-  /* Perfil de elevação */
-  .perfil { border-radius: 18px; padding: 14px 14px 10px; background: rgba(2, 6, 14, .45); border: 1px solid var(--borda);
-    box-shadow: inset 0 2px 10px rgba(0, 0, 0, .5); }
-  .perfil-cab { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--texto-2); margin-bottom: 6px; }
-  .perfil-cab b { font-family: var(--mono); color: var(--verde-claro); font-size: 15px; }
-  .perfil > svg { width: 100%; height: 130px; display: block; overflow: visible; }
-  .perfil-leg { display: flex; gap: 14px; font-size: 11px; color: var(--texto-3); margin-top: 6px; }
+  /* Seções: perfil e passo a passo */
+  .secao { border-radius: 16px; padding: 12px 14px; background: rgba(2, 6, 14, .45); border: 1px solid var(--borda); box-shadow: inset 0 2px 10px rgba(0, 0, 0, .45); }
+  .secao-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 12.5px; font-weight: 700; color: var(--texto-2); }
+  .secao-cab b { font-family: var(--mono); font-size: 13px; color: var(--verde-claro); }
+  .perfil > svg { width: 100%; height: 120px; display: block; overflow: visible; margin-top: 10px; }
+  .perfil-leg { display: flex; gap: 14px; font-size: 11px; color: var(--texto-3); margin-top: 8px; }
   .perfil-leg i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  .perfil .aviso { margin-top: 10px; }
+  details.secao summary { list-style: none; cursor: pointer; }
+  details.secao summary::-webkit-details-marker { display: none; }
+  details.secao summary b::after { content: ' ▾'; display: inline-block; transition: transform .2s; }
+  details.secao[open] summary b::after { transform: rotate(180deg); }
 
-  /* Links externos como teclas */
-  .teclas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .tecla { text-decoration: none; text-align: center; padding: 13px; border-radius: 14px; font-weight: 800; font-size: 14px; color: #fff;
-    display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .08s, box-shadow .08s; }
-  .tecla.google { background: linear-gradient(180deg, #60a5fa, #2563eb); box-shadow: 0 5px 0 #1e3a8a, 0 10px 20px -6px rgba(37, 99, 235, .6), inset 0 1px 0 rgba(255, 255, 255, .35); }
-  .tecla.waze { background: linear-gradient(180deg, #67e8f9, #06b6d4); color: #052e3a; box-shadow: 0 5px 0 #0e7490, 0 10px 20px -6px rgba(6, 182, 212, .6), inset 0 1px 0 rgba(255, 255, 255, .5); }
-  .tecla:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, .5); }
-
-  /* Passo a passo */
-  .passos { list-style: none; position: relative; display: flex; flex-direction: column; gap: 4px; }
+  .passos { list-style: none; position: relative; display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
   .passos::before { content: ''; position: absolute; left: 17px; top: 18px; bottom: 18px; width: 2px; background: linear-gradient(var(--verde), rgba(16, 185, 129, .1)); }
-  .passo { position: relative; display: flex; gap: 12px; align-items: flex-start; padding: 7px 8px 7px 0; border-radius: 12px; }
+  .passo { position: relative; display: flex; gap: 12px; align-items: flex-start; padding: 6px 4px 6px 0; }
   .passo-icone { position: relative; z-index: 1; width: 36px; height: 36px; flex-shrink: 0; border-radius: 12px; display: grid; place-items: center;
     background: linear-gradient(160deg, #1f3354, #12213b); border: 1px solid var(--borda-forte); box-shadow: 0 4px 0 #0a1428, 0 8px 14px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .12); color: var(--verde-claro); }
   .passo:last-child .passo-icone { background: linear-gradient(145deg, #34d399, #059669); color: #052e1c; border-color: transparent; box-shadow: 0 4px 0 #064e3b, 0 0 16px rgba(52, 211, 153, .5); }
-  .passo-txt { font-size: 13.5px; line-height: 1.4; padding-top: 8px; }
+  .passo-txt { font-size: 13px; line-height: 1.4; padding-top: 8px; }
   .passo-txt small { display: block; font-family: var(--mono); font-size: 11px; color: var(--texto-3); margin-top: 2px; }
-  .vazio { text-align: center; padding: 26px 10px; color: var(--texto-3); font-size: 13px; line-height: 1.6; }
-  .vazio .globo { width: 74px; height: 74px; margin: 0 auto 12px; border-radius: 50%; position: relative;
-    background: radial-gradient(circle at 35% 30%, #3b82f6, #1e3a8a 60%, #0b1830); box-shadow: 0 0 0 6px rgba(59, 130, 246, .08), 0 20px 40px rgba(29, 78, 216, .45), inset -8px -10px 20px rgba(0, 0, 0, .5); animation: flutuar 4s ease-in-out infinite; }
-  .vazio .globo::after { content: ''; position: absolute; inset: -14px; border-radius: 50%; border: 1px dashed rgba(96, 165, 250, .35); animation: girar 14s linear infinite; }
-  @keyframes flutuar { 50% { transform: translateY(-6px); } }
+  .alternativa { font-size: 12.5px; color: var(--texto-2); padding: 8px 0; border-top: 1px solid var(--borda); }
+  .alternativa:first-of-type { margin-top: 10px; }
+
+  /* Esqueleto enquanto calcula */
+  .esqueleto { display: flex; flex-direction: column; gap: 10px; }
+  .esqueleto i { display: block; height: 16px; border-radius: 8px; background: linear-gradient(90deg, rgba(148, 197, 255, .06), rgba(148, 197, 255, .14), rgba(148, 197, 255, .06));
+    background-size: 200% 100%; animation: brilhar 1.2s linear infinite; }
+  .esqueleto i:first-child { height: 120px; border-radius: 20px; }
+  .esqueleto i:last-child { width: 60%; }
+  @keyframes brilhar { to { background-position: -200% 0; } }
   @keyframes girar { to { transform: rotate(360deg); } }
 
   /* Controles 3D (canto direito) */
@@ -311,26 +325,13 @@
   </div>
 </header>
 
-<aside class="painel">
-  <div class="painel-rolagem" id="painel">
+<!-- O conteúdo do painel é montado pelo renderPainel() conforme a fase -->
+<aside class="painel" id="painel">
+  <div class="painel-rolagem">
     <div id="cabecalho"></div>
-
-    <button class="btn3d" id="btnGps"><span class="alvo"></span><span id="btnGpsTxt">Encontrar rota segura</span></button>
-
-    <div class="segmentos" id="segmentos" data-modo="pe">
-      <span class="pilula"></span>
-      <button data-modo="pe" class="ativo">🚶 A pé</button>
-      <button data-modo="carro">🚗 De carro</button>
-    </div>
-    <p class="dica">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      Usa a sua localização atual. Sem GPS? Toque no mapa onde você está. Arraste com o botão direito para girar a câmera.
-    </p>
-
-    <div id="resultado">
-      <div class="vazio"><div class="globo"></div>Nenhuma rota calculada ainda.<br>Toque em <b>Encontrar rota segura</b> ou no mapa.</div>
-    </div>
+    <div id="corpo"></div>
   </div>
+  <footer class="painel-rodape" id="rodape"></footer>
 </aside>
 
 <div class="controles">
@@ -386,6 +387,8 @@ const estado = {
   vista3d: true,
   passeio: null,
   girando: null,
+  fase: 'inicio',          // inicio, localizando, calculando, rota, erro
+  erro: '',
 };
 
 const $ = (id) => document.getElementById(id);
@@ -723,20 +726,133 @@ function iconePasso(txt, ultimo) {
 }
 const ICONE_AVISO = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.7 3.86a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>';
 
-function cabecalho() {
-  if (!alerta) {
-    $('cabecalho').innerHTML = `<div class="intro"><div class="rotulo">Segurança</div><h1>Rota de Fuga</h1><p>O caminho mais seguro até um local alto, longe das áreas de risco de enchente — calculado em 3D com o relevo real.</p></div>`;
-    return;
-  }
-  const lista = estado.zonas.length
-    ? estado.zonas.map((z) => `<b>${esc(z.rio)}</b> · ${esc(z.descricao)}`).join('<br>')
-    : 'Carregando a área em alerta…';
-  $('cabecalho').innerHTML = `
-    <div class="alerta">
-      <div class="alerta-topo"><span class="sirene"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a7 7 0 0 0-7 7v7H4v3h16v-3h-1V9a7 7 0 0 0-7-7z"/></svg></span>ALERTA DE ENCHENTE</div>
-      <div class="alerta-lista">${lista}</div>
-      <div class="alerta-rodape">Afaste-se da área vermelha seguindo a rota verde.</div>
+const ICONE_SIRENE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a7 7 0 0 0-7 7v7H4v3h16v-3h-1V9a7 7 0 0 0-7-7z"/></svg>';
+const ICONE_NAVEGAR = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11 22 2l-9 19-2-8-8-2z"/></svg>';
+const ICONE_PLAY = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"/></svg>';
+const ICONE_RECALCULAR = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+
+// O painel tem uma fase: inicio, localizando, calculando, rota ou erro.
+// Cada fase decide o que aparece; renderPainel() redesenha tudo quando ela muda.
+function seletorModo() {
+  return `
+    <div class="segmentos" data-modo="${estado.modo}">
+      <span class="pilula"></span>
+      <button data-acao="modo" data-modo="pe" class="${estado.modo === 'pe' ? 'ativo' : ''}">🚶 A pé</button>
+      <button data-acao="modo" data-modo="carro" class="${estado.modo === 'carro' ? 'ativo' : ''}">🚗 De carro</button>
     </div>`;
+}
+
+function nomesDasZonas() {
+  return estado.zonas.map((z) => `${esc(z.rio)} · ${esc(z.descricao)}`).join('<br>');
+}
+
+function htmlCabecalho() {
+  const d = estado.resposta;
+  if (estado.fase === 'rota' && d?.dentro_de_zona_risco) {
+    return `
+      <div class="status perigo">
+        <span class="sirene">${ICONE_SIRENE}</span>
+        <div>
+          <b>Você está dentro da área de risco</b>
+          <span>Saia agora seguindo a rota verde.</span>
+          ${alerta && estado.zonas.length ? `<small>Alerta: ${nomesDasZonas()}</small>` : ''}
+        </div>
+      </div>`;
+  }
+  if (alerta) {
+    return `
+      <div class="status alerta">
+        <span class="sirene">${ICONE_SIRENE}</span>
+        <div><b>Alerta de enchente</b><span>${estado.zonas.length ? nomesDasZonas() : 'Carregando a área em alerta…'}</span></div>
+      </div>`;
+  }
+  return '<div class="intro"><h1>Rota de Fuga</h1><p>O caminho mais seguro até um lugar alto, longe das áreas de risco de enchente.</p></div>';
+}
+
+function htmlRota(d) {
+  const destino = d.destino;
+  const tempo = d.rota ? fmtTempo(d.rota.duracao_s) : '—';
+  const distancia = fmtDist(d.rota ? d.rota.distancia_m : destino.distancia_linha_reta_m);
+  const acima = destino.acima_do_risco_m != null ? `+${Math.round(destino.acima_do_risco_m)} m` : '—';
+  // O "você está dentro" já aparece na faixa de status
+  const avisos = d.avisos.filter((a) => !a.startsWith('Você está DENTRO'));
+  const passos = d.rota?.passos ?? [];
+
+  return `
+    <div class="destino3d"><section class="destino-cartao" id="cartaoDestino"><div class="camada">
+      <div class="destino-rotulo">Vá para</div>
+      <div class="destino-topo">
+        <span class="bandeira">${ICONES.chegada.replace('stroke="currentColor"', 'stroke="#fff"')}</span>
+        <div>
+          <div class="destino-nome">${esc(destino.nome)}</div>
+          <div class="destino-tipo">${esc(destino.endereco || destino.tipo)}</div>
+        </div>
+      </div>
+      <div class="metricas">
+        <div class="metrica"><b>${tempo}</b><span>${d.rota ? (estado.modo === 'pe' ? 'a pé' : 'de carro') : 'sem rota'}</span></div>
+        <div class="metrica"><b>${distancia}</b><span>${d.rota ? 'distância' : 'linha reta'}</span></div>
+        <div class="metrica subida"><b>${acima}</b><span>acima do rio</span></div>
+      </div>
+      ${seletorModo()}
+    </div></section></div>
+
+    ${avisos.length ? `<div class="avisos">${avisos.map((a) => `<div class="aviso">${ICONE_AVISO}<span>${esc(a)}</span></div>`).join('')}</div>` : ''}
+
+    <section class="secao perfil" id="perfil"><div class="secao-cab"><span>Perfil do caminho</span><b>calculando…</b></div></section>
+
+    ${passos.length ? `
+      <details class="secao">
+        <summary class="secao-cab"><span>Passo a passo</span><b>${passos.length} instruções</b></summary>
+        <ol class="passos">${passos.map((p, i) => `
+          <li class="passo"><span class="passo-icone">${iconePasso(p.instrucao, i === passos.length - 1)}</span>
+          <span class="passo-txt">${esc(p.instrucao)}${p.distancia_m ? `<small>${fmtDist(p.distancia_m)}</small>` : ''}</span></li>`).join('')}
+        </ol>
+      </details>` : ''}
+
+    ${d.alternativas.length ? `
+      <section class="secao">
+        <div class="secao-cab"><span>Outras opções</span></div>
+        ${d.alternativas.map((a) => `<div class="alternativa">${esc(a.destino.nome)} · ${fmtTempo(a.duracao_s)} · ${fmtDist(a.distancia_m)}${a.cruza_zona_risco ? ' · passa por área de risco' : ''}</div>`).join('')}
+      </section>` : ''}`;
+}
+
+function htmlCorpo() {
+  if (estado.fase === 'rota' || (estado.fase === 'calculando' && estado.resposta)) return htmlRota(estado.resposta);
+  if (estado.fase === 'calculando' || estado.fase === 'localizando') return '<div class="esqueleto"><i></i><i></i><i></i></div>';
+  if (estado.fase === 'erro') return `<div class="aviso grave">${ICONE_AVISO}<span>${esc(estado.erro)}</span></div>`;
+  return seletorModo();
+}
+
+function htmlRodape() {
+  const d = estado.resposta;
+  if (estado.fase === 'rota') {
+    return `
+      <a class="btn3d azul" href="${esc(d.links.google_maps)}" target="_blank" rel="noopener">${ICONE_NAVEGAR} Navegar pelo Google Maps</a>
+      <div class="acoes">
+        <a class="btn-sec" href="${esc(d.links.waze)}" target="_blank" rel="noopener">Waze</a>
+        <button class="btn-sec" data-acao="passeio" ${d.rota ? '' : 'disabled'}>${ICONE_PLAY} Ver em 3D</button>
+        <button class="btn-sec" data-acao="gps">${ICONE_RECALCULAR} Minha posição</button>
+      </div>`;
+  }
+  const textos = { localizando: 'Obtendo sua localização…', calculando: 'Calculando rota segura…', erro: 'Tentar de novo' };
+  const ocupado = estado.fase === 'localizando' || estado.fase === 'calculando';
+  return `
+    <button class="btn3d" data-acao="gps" ${ocupado ? 'disabled' : ''}><span class="alvo"></span>${textos[estado.fase] || 'Encontrar rota segura'}</button>
+    ${ocupado ? '' : '<p class="ou-toque">ou toque no mapa onde você está</p>'}`;
+}
+
+function renderPainel() {
+  $('cabecalho').innerHTML = htmlCabecalho();
+  $('corpo').innerHTML = htmlCorpo();
+  $('corpo').classList.toggle('esmaecido', estado.fase === 'calculando' && !!estado.resposta);
+  $('rodape').innerHTML = htmlRodape();
+  inclinarAoPassarMouse($('cartaoDestino'));
+}
+
+function mudarFase(fase, erro = '') {
+  estado.fase = fase;
+  estado.erro = erro;
+  renderPainel();
 }
 
 function perfilSVG(alts, total, altRio) {
@@ -769,49 +885,6 @@ function perfilSVG(alts, total, altRio) {
     </svg>`;
 }
 
-function mostrarResultado(d) {
-  const destino = d.destino;
-  const avisos = d.avisos.map((a, i) => `<div class="aviso ${i === 0 && d.dentro_de_zona_risco ? 'grave' : ''}">${ICONE_AVISO}<span>${esc(a)}</span></div>`).join('');
-  const metricas = d.rota
-    ? `<div class="metrica"><b>${fmtTempo(d.rota.duracao_s)}</b><span>${estado.modo === 'pe' ? 'a pé' : 'de carro'}</span></div>
-       <div class="metrica"><b>${fmtDist(d.rota.distancia_m)}</b><span>distância</span></div>`
-    : `<div class="metrica"><b>${fmtDist(destino.distancia_linha_reta_m)}</b><span>linha reta</span></div><div class="metrica"><b>—</b><span>sem rota</span></div>`;
-  const acima = destino.acima_do_risco_m != null
-    ? `<div class="metrica subida"><b>+${Math.round(destino.acima_do_risco_m)} m</b><span>acima do rio</span></div>`
-    : `<div class="metrica"><b>—</b><span>altitude</span></div>`;
-  const passos = d.rota?.passos?.length
-    ? `<div><div class="rotulo">Passo a passo</div><ol class="passos">${d.rota.passos.map((p, i, arr) => `
-        <li class="passo"><span class="passo-icone">${iconePasso(p.instrucao, i === arr.length - 1)}</span>
-        <span class="passo-txt">${esc(p.instrucao)}${p.distancia_m ? `<small>${fmtDist(p.distancia_m)}</small>` : ''}</span></li>`).join('')}</ol></div>`
-    : '';
-  const alternativas = d.alternativas.length
-    ? `<div><div class="rotulo">Outras opções</div>${d.alternativas.map((a) => `<div class="aviso" style="background:rgba(148,197,255,.05);border-color:var(--borda);color:var(--texto-2)">${esc(a.destino.nome)} · ${fmtTempo(a.duracao_s)} · ${fmtDist(a.distancia_m)}${a.cruza_zona_risco ? ' ⚠️ passa por área de risco' : ''}</div>`).join('')}</div>`
-    : '';
-
-  $('resultado').innerHTML = `
-    ${avisos}
-    <div>
-      <div class="rotulo">Vá para</div>
-      <div class="destino3d"><div class="destino-cartao" id="cartaoDestino">
-        <div class="camada">
-          <div class="destino-topo">
-            <span class="bandeira">${ICONES.chegada.replace('stroke="currentColor"', 'stroke="#fff"')}</span>
-            <div><div class="destino-nome">${esc(destino.nome)}</div><div class="destino-tipo">${esc(destino.tipo)}${destino.endereco ? ' · ' + esc(destino.endereco) : ''}</div></div>
-          </div>
-          <div class="metricas">${metricas}${acima}</div>
-        </div>
-      </div></div>
-    </div>
-    <div class="perfil" id="perfil"><div class="perfil-cab"><span>Perfil do caminho</span><b>calculando…</b></div></div>
-    <div class="teclas">
-      <a class="tecla google" href="${esc(d.links.google_maps)}" target="_blank" rel="noopener">Google Maps</a>
-      <a class="tecla waze" href="${esc(d.links.waze)}" target="_blank" rel="noopener">Waze</a>
-    </div>
-    ${passos}
-    ${alternativas}`;
-  inclinarAoPassarMouse($('cartaoDestino'));
-}
-
 async function mostrarPerfil(d) {
   const caixa = $('perfil');
   const coords = d.rota ? d.rota.geometria.coordinates : [estado.origem, [d.destino.lng, d.destino.lat]];
@@ -836,10 +909,10 @@ async function mostrarPerfil(d) {
     geometry: { type: 'MultiLineString', coordinates: trechos.filter((t) => t.length > 1) } });
 
   caixa.innerHTML = `
-    <div class="perfil-cab"><span>Perfil do caminho · ${fmtDist(total)}</span><b>${ganho >= 0 ? 'sobe +' : 'desce '}${Math.round(ganho)} m</b></div>
+    <div class="secao-cab"><span>Perfil do caminho · ${fmtDist(total)}</span><b>${ganho >= 0 ? 'sobe +' : 'desce '}${Math.round(ganho)} m</b></div>
     ${perfilSVG(alts, total, altRio)}
     <div class="perfil-leg"><span><i style="background:#34d399"></i>terreno no caminho</span>${altRio != null ? '<span><i style="background:#ef4444"></i>nível do rio</span>' : ''}</div>
-    ${metrosBaixos > 0 ? `<div class="aviso" style="margin-top:10px">${ICONE_AVISO}<span><b>${fmtDist(metrosBaixos)}</b> do caminho ficam abaixo do nível do rio (laranja no mapa) e podem estar alagados. Passe com cuidado e não entre em água corrente.</span></div>` : ''}`;
+    ${metrosBaixos > 0 ? `<div class="aviso">${ICONE_AVISO}<span><b>${fmtDist(metrosBaixos)}</b> do caminho ficam abaixo do nível do rio (laranja no mapa) e podem estar alagados. Passe com cuidado e não entre em água corrente.</span></div>` : ''}`;
 }
 
 // Cartão que inclina seguindo o mouse
@@ -854,10 +927,8 @@ function inclinarAoPassarMouse(el) {
 }
 
 // ---- Fluxo principal ----
-function carregando(sim, texto) {
-  $('carregando').classList.toggle('visivel', sim);
-  $('btnGps').disabled = sim;
-  $('btnGpsTxt').textContent = sim ? (texto || 'Calculando rota…') : 'Encontrar rota segura';
+function radar(ligado) {
+  $('carregando').classList.toggle('visivel', ligado);
 }
 
 function enquadrar(duracao = 2400) {
@@ -882,7 +953,8 @@ function margensDaTela() {
 
 async function calcular() {
   if (!estado.origem) return;
-  carregando(true);
+  mudarFase('calculando');
+  radar(true);
   colocarVoce(estado.origem);
   if (marcadorDestino) marcadorDestino.remove();
   desenharFarois([{ ponto: estado.origem, cor: '#60a5fa' }]);
@@ -895,7 +967,6 @@ async function calcular() {
     const d = await api(`/rota-fuga?lat=${lat}&lng=${lng}&modo=${estado.modo}${sufixoAlerta ? '&' + sufixoAlerta : ''}`);
     estado.resposta = d;
     desenharZonas(d.zonas_risco);
-    cabecalho();
     const destino = [d.destino.lng, d.destino.lat];
     estado.rota = d.rota ? d.rota.geometria.coordinates : [estado.origem, destino];
     mapa.getSource('rota').setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: estado.rota } });
@@ -903,7 +974,7 @@ async function calcular() {
     mapa.setLayoutProperty('rota-trilha', 'visibility', d.rota ? 'visible' : 'none');
     colocarDestino(destino, d.destino);
     desenharFarois([{ ponto: estado.origem, cor: '#60a5fa' }, { ponto: destino, cor: '#34d399' }]);
-    mostrarResultado(d);
+    mudarFase('rota');
     $('ctrlPasseio').disabled = !d.rota;
     enquadrar();
     mostrarPerfil(d);
@@ -911,21 +982,21 @@ async function calcular() {
     estado.resposta = null;
     estado.rota = [];
     $('ctrlPasseio').disabled = true;
-    $('resultado').innerHTML = `<div class="aviso grave">${ICONE_AVISO}<span>${esc(e.message)}. Siga as orientações da Defesa Civil.</span></div>`;
+    mudarFase('erro', `${e.message}. Siga as orientações da Defesa Civil.`);
   } finally {
-    carregando(false);
+    radar(false);
   }
 }
 
 function usarGPS() {
   if (!navigator.geolocation) {
-    $('resultado').innerHTML = `<div class="aviso">${ICONE_AVISO}<span>Seu navegador não oferece localização. Toque no mapa onde você está.</span></div>`;
+    mudarFase('erro', 'Seu navegador não oferece localização. Toque no mapa onde você está.');
     return;
   }
-  carregando(true, 'Obtendo localização…');
+  mudarFase('localizando');
   navigator.geolocation.getCurrentPosition(
-    (pos) => { carregando(false); estado.origem = [pos.coords.longitude, pos.coords.latitude]; calcular(); },
-    () => { carregando(false); $('resultado').innerHTML = `<div class="aviso">${ICONE_AVISO}<span>Não consegui sua localização. Toque no mapa onde você está.</span></div>`; },
+    (pos) => { estado.origem = [pos.coords.longitude, pos.coords.latitude]; calcular(); },
+    () => mudarFase('erro', 'Não consegui sua localização. Toque no mapa onde você está.'),
     { enableHighAccuracy: true, timeout: 15000 },
   );
 }
@@ -1006,14 +1077,22 @@ function alternarSatelite() {
 }
 
 // ---- Início ----
-$('btnGps').addEventListener('click', () => { pararPasseio(); pararGiro(); usarGPS(); });
-$('segmentos').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
-  estado.modo = b.dataset.modo;
-  $('segmentos').dataset.modo = estado.modo;
-  $('segmentos').querySelectorAll('button').forEach((x) => x.classList.toggle('ativo', x === b));
-  pararPasseio();
-  calcular();
-}));
+$('painel').addEventListener('click', (e) => {
+  const botao = e.target.closest('[data-acao]');
+  if (!botao || botao.disabled) return;
+  const acao = botao.dataset.acao;
+  if (acao === 'gps') {
+    pararPasseio(); pararGiro(); usarGPS();
+  } else if (acao === 'passeio') {
+    estado.passeio ? pararPasseio() : percorrer();
+  } else if (acao === 'modo' && botao.dataset.modo !== estado.modo) {
+    estado.modo = botao.dataset.modo;
+    botao.closest('.segmentos').dataset.modo = estado.modo;  // a pílula desliza antes de redesenhar
+    pararPasseio();
+    if (estado.origem) setTimeout(calcular, 250);
+    else renderPainel();
+  }
+});
 $('ctrl3d').addEventListener('click', alternar3d);
 $('ctrlSatelite').addEventListener('click', alternarSatelite);
 $('ctrlPasseio').addEventListener('click', () => (estado.passeio ? pararPasseio() : percorrer()));
@@ -1021,10 +1100,8 @@ $('ctrlGirar').addEventListener('click', girar);
 $('ctrlCentro').addEventListener('click', () => { pararPasseio(); pararGiro(); enquadrar(1600); });
 $('passeioParar').addEventListener('click', pararPasseio);
 
-$('segmentos').dataset.modo = estado.modo;
-$('segmentos').querySelectorAll('button').forEach((x) => x.classList.toggle('ativo', x.dataset.modo === estado.modo));
 setInterval(() => { $('chipHora').querySelector('b').textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); }, 1000);
-cabecalho();
+renderPainel();
 
 async function iniciar() {
   api('/status').then((s) => {
@@ -1034,7 +1111,7 @@ async function iniciar() {
 
   try {
     desenharZonas(await api('/zonas-risco' + (sufixoAlerta ? '?' + sufixoAlerta : '')));
-    cabecalho();
+    $('cabecalho').innerHTML = htmlCabecalho();
     if (estado.zonas.length && !params.get('lat')) {
       const b = estado.zonas.reduce((bb, z) => bb.extend([z.lng, z.lat]), new maplibregl.LngLatBounds([estado.zonas[0].lng, estado.zonas[0].lat], [estado.zonas[0].lng, estado.zonas[0].lat]));
       const padding = margensDaTela();

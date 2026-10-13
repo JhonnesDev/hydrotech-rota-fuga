@@ -40,20 +40,33 @@ TelaRotaFuga
 ├── BarraTopo
 │   ├── Marca                   ← logo 3D + "Rota de Fuga 3D"
 │   └── Chips                   ← desvio (ORS ativo/reserva), nº de áreas de risco, hora
-├── PainelRota (vidro, à esquerda; no celular vira gaveta embaixo)
-│   ├── CabecalhoAlerta | Intro ← faixa vermelha com sirene (se ?alerta) ou título
-│   ├── BotaoGps                ← botão 3D vermelho "Encontrar rota segura"
-│   ├── SeletorModo             ← pílula deslizante A pé / De carro
-│   ├── ListaAvisos             ← amarelo; vermelho quando "Você está DENTRO"
-│   ├── CartaoDestino           ← inclina com o mouse; métricas tempo · distância · acima do rio
-│   ├── PerfilAltitude          ← gráfico SVG: terreno, nível do rio, trecho alagável em vermelho
-│   ├── BotoesExternos          ← teclas 3D Google Maps / Waze
-│   └── PassoAPasso             ← linha do tempo com ícone por manobra
+├── PainelRota (vidro, à esquerda; no celular vira gaveta embaixo; altura segue o conteúdo)
+│   ├── FaixaStatus             ← uma só: "dentro da área de risco" (vermelha), alerta (discreta) ou título
+│   ├── Corpo                   ← muda conforme a fase (ver abaixo)
+│   │   ├── CartaoDestino       ← "Vá para", métricas e o seletor a pé / de carro
+│   │   ├── ListaAvisos         ← só amarelos; o vermelho fica na faixa de status
+│   │   ├── PerfilAltitude      ← terreno, nível do rio, trecho alagável e o aviso dele
+│   │   └── PassoAPasso         ← <details> fechado, "N instruções"
+│   └── Rodape (fixo)           ← ação principal: "Encontrar rota segura" ou "Navegar pelo Google Maps"
+│                                  + Waze · Ver em 3D · Minha posição
 ├── ControlesCamera (coluna à direita)
 │   └── 3D↔cima · satélite · percorrer rota · girar · enquadrar · legenda
 ├── BarraPasseio                ← aparece ao "percorrer": progresso e "faltam X m"
 └── RadarCarregando             ← radar girando enquanto calcula
 ```
+
+### Fases do painel
+
+O painel tem uma fase (`estado.fase`) e o `renderPainel()` redesenha tudo quando ela muda.
+
+| Fase | Corpo | Rodapé |
+|---|---|---|
+| `inicio` | seletor a pé / de carro | "Encontrar rota segura" + "ou toque no mapa" |
+| `localizando` / `calculando` | esqueleto carregando (ou a rota anterior apagadinha, se já tinha uma) | botão desabilitado com o que está fazendo |
+| `rota` | cartão do destino, avisos, perfil, passo a passo | "Navegar pelo Google Maps" + Waze, Ver em 3D, Minha posição |
+| `erro` | aviso vermelho com o motivo | "Tentar de novo" |
+
+Os botões do painel usam `data-acao` (`gps`, `modo`, `passeio`) e um único ouvinte de clique.
 
 ## Camadas do mapa (ordem de baixo para cima)
 
